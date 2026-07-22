@@ -10,6 +10,7 @@ class FullcalendarPlugin extends Plugin
     {
         return [
             'onPluginsInitialized' => ['onPluginsInitialized', 0],
+            'onGetPageTemplates' => ['onGetPageTemplates', 0],
         ];
     }
 
@@ -17,9 +18,6 @@ class FullcalendarPlugin extends Plugin
     {
         // Don't proceed if we are in the admin plugin
         if ($this->isAdmin()) {
-            $this->enable([
-                'onGetPageTemplates' => ['onGetPageTemplates', 0], // this is finally the right place :-) 18.07.23
-            ]);
             return;
         }
         // Enable the main events we are interested in
@@ -115,6 +113,5 @@ class FullcalendarPlugin extends Plugin
         /** @var Types $types */
         $types = $event->types;
         $types->register('calendar');
-        $types->scanTemplates(__DIR__ . '/templates');
     }
 }
