@@ -237,13 +237,23 @@ function whenJqReady() {
 		},
 		//	Description as Tooltip (tippy.js) :
 		eventRender: function(info) {
+			let props = info.event.extendedProps;
+			if (props.location === "null" && props.description === "null")
+				return;
+
+			let location = props.location
+			if (props.location === "null") location = "";
+			let description = props.description
+			if (props.description === "null") description = "";
+			let separator = "";
+			if (location !== "" && description !== "")
+				separator = "; ";
+
 			if (!enableDescPopup) {	// tippy hover only if click popup is disabled
-				if (info.event.extendedProps.description) {
-					tippy (info.el, {
-						content: info.event.extendedProps.description,
-						allowHTML: true,	// see https://github.com/wernerjoss/grav-plugin-fullcalendar/issues/29
-					});
-				}
+				tippy (info.el, {
+					content: location + separator + description,
+					allowHTML: true,	// see https://github.com/wernerjoss/grav-plugin-fullcalendar/issues/29
+				});
 			}
 		},
 		events: function(info, successCallback, failureCallback) {
@@ -325,6 +335,13 @@ function whenJqReady() {
 							entry = entry;
 						}
 						if (entry !== null)	fcevents["description"] = entry;
+						var entry = item.getFirstPropertyValue("location");
+						try	{	// see https://stackoverflow.com/questions/5396560/how-do-i-convert-special-utf-8-chars-to-their-iso-8859-1-equivalent-using-javasc
+							entry = decodeURIComponent(escape(entry));
+						}	catch(e)	{
+							entry = entry;
+						}
+						if (entry !== null)	fcevents["location"] = entry;
 						var entry = item.getFirstPropertyValue("color");	// add color from ics
 						if (entry !== null)	fcevents["color"] = entry;
 
