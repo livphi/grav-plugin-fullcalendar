@@ -142,7 +142,6 @@ function whenJqReady() {
 		.done(function( data, textStatus, jqXHR ) {
 			var jcalData = ICAL.parse(data);	//	directly parse data, no need to split to lines first ! 14.02.20
 			var comp = new ICAL.Component(jcalData);
-			console.lcomp;
 
 			var tzComps = comp.getAllSubcomponents("vtimezone");
 			var tzids = jQuery.map(tzComps, function(item) {
