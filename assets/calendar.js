@@ -17,7 +17,7 @@ function whenJqReady() {
 	var verbose = false;
 	var defaultLocale = 'en';
 	var cfgWeekNums = jQuery('#weeknums').text();	//	get Paramter from DOM
-	weekNums = false;
+	var weekNums = false;
 	var firstWeekDay = 0;	// Default, new 20.03.23
 	var cfgfirstWeekDay = jQuery('#1stweekday').text();	//	get Paramter from DOM
 	if (Number(cfgfirstWeekDay) > 0)	firstWeekDay = Number(cfgfirstWeekDay);
@@ -39,7 +39,7 @@ function whenJqReady() {
 	var loc = window.location;  // the current page
 	pagecalendars.forEach(function(value, index) {
 		if (value) {
-			url = loc + '/' + value;
+			var url = loc + '/' + value;
 			calUrls.push(url);
 			calNames.push(value);
 		}
@@ -72,7 +72,7 @@ function whenJqReady() {
 	if (verbose) console.log('CORS Url:', cors_api_url);
 	var cfgUrls = [];
 	cfgfiles.forEach(function(value, index) {
-		cfgFile = value;
+		var cfgFile = value;
 		if (value){
 			var calName = value;
 			if (verbose) console.log('yaml CFG File:' + cfgFile);
@@ -128,7 +128,7 @@ function whenJqReady() {
 	var dlend = 0;
 	// determine Time Zone from 1st Calendar in List - others will be ignored because time zone is a single setting for the whole calendar Object !
 	if (len > 0) {
-		calendarUrl = calUrls[0];
+		var calendarUrl = calUrls[0];
 		//	console.log(calendarUrl);
 		jQuery.ajax({
 			crossOrigin: true,
@@ -140,17 +140,17 @@ function whenJqReady() {
 			}
 		})
 		.done(function( data, textStatus, jqXHR ) {
-			//	console.log(data);
 			var jcalData = ICAL.parse(data);	//	directly parse data, no need to split to lines first ! 14.02.20
 			var comp = new ICAL.Component(jcalData);
+			console.lcomp;
 
 			var tzComps = comp.getAllSubcomponents("vtimezone");
-			tzids = jQuery.map(tzComps, function(item) {
+			var tzids = jQuery.map(tzComps, function(item) {
 				var entry = item.getFirstPropertyValue("tzid");
 				if (entry !== null)	icsTimezone = entry;
 				// now evaluate Daylight saving time period (months):
 				var dlComps = item.getAllSubcomponents("daylight");
-					dlids = jQuery.map(dlComps, function(item) {
+					var dlids = jQuery.map(dlComps, function(item) {
 					var entry = item.getFirstPropertyValue("rrule");
 					if (entry !== null)	{
 						var parts = entry["parts"];
@@ -187,6 +187,7 @@ function whenJqReady() {
 
 	// page is now ready, initialize the calendar...
 	var calendarEl = document.getElementById('calendar');
+	var now;
 	switch (LocaleCode) {
 	case 'de':
 		now = "Heute";
@@ -287,6 +288,7 @@ function whenJqReady() {
 
 					var comp = new ICAL.Component(jcalData);
 					var eventComps = comp.getAllSubcomponents("vevent");
+					var utcTimezone = ICAL.Timezone.utcTimezone;
 					//	map them to FullCalendar events Objects
 					events = jQuery.map(eventComps, function(item) {
 						var fcevents = {};
@@ -305,8 +307,10 @@ function whenJqReady() {
 						var entry = item.getFirstPropertyValue("url");
 						if (entry !== null)	fcevents["url"] = entry;
 						var entry = item.getFirstPropertyValue("dtstart");
-						if (entry !== null)	{ fcevents["start"] = entry.toJSDate(); var start = entry;}
+						var start = entry;
+						if (entry !== null)	{ fcevents["start"] = entry.toJSDate();}
 
+						/*
 						//	tz_offset_single = 0;	//		now from plugin config 01.01.22
 						if (verbose) console.log('tz_offset_single:', tz_offset_single);
 						if (tz_offset_single != 0) {
@@ -321,10 +325,12 @@ function whenJqReady() {
 							fcevents["start"] = start.toJSDate();
 							if (verbose) console.log('newstart', start);
 						}
+						*/
 
 						var entry = item.getFirstPropertyValue("dtend");
-						if (entry !== null)	{ fcevents["end"] = entry.toJSDate(); var end = entry; }
-						duration = fcevents["end"] - fcevents["start"];	// calculate event duration 29.08.20
+						var end = entry;
+						if (entry !== null)	{ fcevents["end"] = entry.toJSDate();}
+						var duration = fcevents["end"] - fcevents["start"];	// calculate event duration 29.08.20
 						if (verbose)	console.log('Duration:', duration);
 						fcevents["allDay"] = true;	// default value -> span .fc-time in grid is NOT created
 						if (duration < 86400000)	fcevents["allDay"] = false;	// duration less than 1 day: allDay = false
@@ -361,9 +367,10 @@ function whenJqReady() {
 									end["day"] = end["day"] + 1;
 									if (verbose) console.log('start day', start["day"], 'end day', end["day"]);
 								}
+								/*
 								if (verbose) console.log('tz_offset_rec:', tz_offset_rec);	//	now from plugin config 01.01.22
 								var tz_offset_dl = parseInt(tz_offset_rec);	// default
-								M = parseInt(start["month"]);
+								var M = parseInt(start["month"]);
 								//	console.log('Month:', M);	//	start["month"]);
 								if ((M > dlstart) && (M <= dlend)) {
 									tz_offset_dl = tz_offset_dl + 1;	// add 1h during DAYLIGHT saving period
@@ -374,7 +381,9 @@ function whenJqReady() {
 									//	fcevents["start"] = start.toJSDate();
 									if (verbose) console.log('newstart', start);
 								}
-								fcevents["start"] = start.toJSDate();	// move here 06.03.22 !
+								*/
+								//fcevents["start"] = start.toJSDate();	// move here 06.03.22 !
+								//fcrrules["dtstart"] = fcevents["start"].convertToZone(utcTimezone);
 								/* not needed
 								end["hour"] = end["hour"] + tz_offset;
 								if (verbose)	console.log('newend', end);
@@ -387,7 +396,7 @@ function whenJqReady() {
 								var bysetpos = [];
 								if (Array.isArray(byweekday))	{
 									byweekday = parts["BYDAY"];
-									for (i = 0; i < byweekday.length; i++) {
+									for (var i = 0; i < byweekday.length; i++) {
 										//	DONE: implement BYDAY n+ or n-
 										if (byweekday[i].match(/\d+/g))	{	// entry contains digits, save them to setpos, strip from weekdays
 											var daynum = parseInt(byweekday[i]).toString();
@@ -411,7 +420,8 @@ function whenJqReady() {
 								var byyearday = parts["BYYEARDAY"];
 								if (Array.isArray(byyearday))	{byyearday = parts["BYYEARDAY"];}	else	{byyearday = null;}
 								if (verbose)	console.log('byyearday:', byyearday);
-								if (rrules.dtstart !== undefined)	{fcrrules["dtstart"] = rrules.dtstart;}	else	{fcrrules["dtstart"] = fcevents["start"];}
+								//if (rrules.dtstart !== undefined)	{fcrrules["dtstart"] = rrules.dtstart;}	else	{fcrrules["dtstart"] = fcevents["start"];}
+								fcrrules["dtstart"] = start.convertToZone(utcTimezone).toJSDate();
 								if (byweekday !== null) { fcrrules["byweekday"] = byweekday;}
 								if (bysetpos !== null) { fcrrules["bysetpos"] = bysetpos;}
 								if (byweekno !== null) { fcrrules["byweekno"] = byweekno;}

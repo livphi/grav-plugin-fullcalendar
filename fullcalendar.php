@@ -50,8 +50,9 @@ class FullcalendarPlugin extends Plugin
         /** @var Assets */
         $assets = $this->grav['assets'];
         $config = $this->config->get('plugins.fullcalendar');
+        $assets->addJs('plugins://' . $this->name . '/assets/jquery-4.0.0.min.js', ['group' => 'bottom']);
         $assets->addJs('plugins://' . $this->name . '/assets/jquery.ajax-cross-origin.min.js', ['group' => 'bottom']); // 12.05.21  -   so gehts !!!
-        $assets->addJs('plugins://' . $this->name . '/assets/ical.js/build/ical.min.js', ['group' => 'bottom']); // see also reamde.txt file there
+        $assets->addJs('plugins://' . $this->name . '/assets/ical.min.js', ['group' => 'bottom']);
         // Tooltip:
         $assets->addJs('plugins://' . $this->name . '/assets/popper.min.js', ['group' => 'bottom']);
         $assets->addJs('plugins://' . $this->name . '/assets/tippy-bundle.umd.min.js', ['group' => 'bottom']);
